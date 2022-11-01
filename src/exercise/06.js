@@ -18,25 +18,24 @@ const themes = {
   },
 }
 
-// 🐶 créé un context vers l'objet 'themes' avec l'API context (utilise le thème light par défaut)
-// 🤖 const ThemeContext = React.createContext(themes.light)
+function useTheme() {
+  const context = React.useContext(ThemeContext)
+  if (!context) throw new Error('useTheme must be call inside ThemeProvider')
+  return context
+}
+const ThemeContext = React.createContext(themes.light)
 
-// 🐶 Toolbar permet de propager theme aux enfants : ici on en a plus besoin
-function Toolbar({theme}) {
-  // ⛏️ supprime toutes les références à 'theme'
+function Toolbar() {
   return (
     <div>
-      <Button theme={theme} />
-      <List theme={theme} />
+      <Button />
+      <List />
     </div>
   )
 }
 
-// 🐶 Utilise le theme venant de l'API context et non du prop
-// ⛏️ supprime le prop 'theme'
-function Button({theme}) {
-  // 🐶 utilise le hook useContext pour accéder à theme
-  // 🤖 const theme = React.useContext(ThemeContext)
+function Button() {
+  const [theme] = useTheme()
   return (
     <button style={{background: theme.background, color: theme.foreground}}>
       Envoyer
@@ -44,25 +43,30 @@ function Button({theme}) {
   )
 }
 
-// 🐶 Passe par 'useContext'
-function List({theme}) {
+function List() {
+  const [theme] = useTheme()
   const items = ['react', 'angular', 'vue']
   return (
     <ul style={{...theme.ul}}>
       {items.map((item, index) => {
-        return <Item key={index} theme={theme}>{item}</Item>
+        return <Item key={index}>{item}</Item>
       })}
     </ul>
   )
 }
-// 🐶 Passe par 'useContext'
-function Item({children, theme}) {
+
+function Item({children}) {
+  const [theme] = useTheme()
   return <li style={{...theme.li}}>{children}</li>
 }
-// 🐶 Passe par 'useContext'
-function CheckBox({darkMode, onChange, theme}) {
+
+function CheckBox() {
+  const [darkMode, setDarkMode] = React.useState(false)
+  const [theme, setTheme] = React.useContext(ThemeContext)
+
   const handleCheck = e => {
-    onChange(e.target.checked)
+    setDarkMode(e.target.checked)
+    setTheme(e.target.checked ? themes.dark : themes.light)
   }
   return (
     <label style={{background: theme.background, color: theme.foreground}}>
@@ -71,19 +75,19 @@ function CheckBox({darkMode, onChange, theme}) {
     </label>
   )
 }
+function ThemeProvider(props) {
+  const [theme, setTheme] = React.useState(themes.light)
+  const value = [theme, setTheme]
 
+  return <ThemeContext.Provider value={value} {...props} />
+}
 function App() {
-  const [darkMode, setDarkMode] = React.useState(false)
-  const theme = darkMode ? themes.dark : themes.light
   return (
     <div>
-      {/* 🐶 Utilise le provider de l'api context comme parent de tous les composants qui ont besoin du theme */}
-      {/* Initilise la valeur du provider avec 'theme'*/}
-      {/* 🤖 <ThemeContext.Provider value={theme}> */}
-
-      {/* ⛏️ supprime les props 'theme' */}
-      <CheckBox theme={theme} darkMode={darkMode} onChange={setDarkMode} />
-      <Toolbar theme={theme} />
+      <ThemeProvider>
+        <CheckBox />
+        <Toolbar />
+      </ThemeProvider>
     </div>
   )
 }

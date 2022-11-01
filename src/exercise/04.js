@@ -8,8 +8,7 @@ function Composant({onsubmit}) {
   const [value, setValue] = React.useState('')
   const inputRef = React.useRef()
 
-  //🐶 utilise React.useLayoutEffect(() => {
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     inputRef.current.focus()
   })
 

@@ -15,7 +15,8 @@ import '../02-styles.css'
 
 // 🐶 creer une formatage special pour debug cache
 // 🤖 const cacheFormatDebugValue = (cache) => `\`Expiration ${cache.expire}  : \` => Elements :${cache.data.length}`
-
+const cacheFormatDebugValue = cache =>
+  `\` Expiration ${cache.expire} : \` => Elements :${cache.data.length}`
 const MarvelCacheContext = React.createContext()
 
 function marvelCacheReducer(state, action) {
@@ -88,8 +89,8 @@ function useFetchData() {
 
 function useFindMarvelByName(marvelName) {
   const [cache, dispatch] = useMarvelCache()
-  // 🐶 utilise React.useDebugValue(cache) pour debuger le cache
-  // React.useDebugValue(cache)
+
+  React.useDebugValue(cache)
 
   const {data, error, status, execute, setData} = useFetchData()
   React.useEffect(() => {
@@ -115,8 +116,8 @@ function useFindMarvelByName(marvelName) {
 function useFindMarvelList(marvelName) {
   const [cache, dispatch] = useMarvelCache()
 
-  // 🐶 utilise React.useDebugValue(cache) pour debuger le cache
-  // React.useDebugValue(cache[`${marvelName}-list`], cacheFormatDebugValue)
+  React.useDebugValue(cache[`${marvelName}-list`], cacheFormatDebugValue)
+
   const {data, error, status, execute, setData} = useFetchData()
   React.useEffect(() => {
     if (!marvelName) {

@@ -25,53 +25,39 @@ const reducer = (state, action) => {
   }
 }
 
-// ⛏️ supprime 'search' il sera extrait dans 'useCallback' plus tard
-// 🐶 renomme 'fetch' en 'callback' pour plus de clarté
-function useFetchData(search, fetch) {
+function useFetchData() {
   const [state, dispatch] = React.useReducer(reducer, {
     data: null,
     error: null,
     status: 'idle',
   })
 
-  React.useEffect(() => {
-    // 🐶 fais un appel à la fonction 'callback' (qui retoune une 'promise')
-    // 🤖 const promise = callback()
-
-    // 🐶 sors de la fonction si  'promise' n'est pas défini
-    if (!search) {
-      return
-    }
+  const execute = React.useCallback(fn => {
     dispatch({type: 'fetching'})
+    fn.then(marvel => dispatch({type: 'done', payload: marvel})).catch(error =>
+      dispatch({type: 'fail', error}),
+    )
+  }, [])
 
-    // ⛏️ supprime `fetch(search)` et utilise `promise`
-    fetch(search)
-      .then(marvel => dispatch({type: 'done', payload: marvel}))
-      .catch(error => dispatch({type: 'fail', error}))
-    // 🐶 adapte les dépendances pour que le useEffect ne s'excute sur la modification de 'callback'
-  }, [search, fetch])
-
-  return state
+  return {...state, execute}
 }
 
-// 🐶 Modifie ce hook pour qu'il passe une fonction mémoïsé à 'useFetchData'
 function useFindMarvelList(marvelName) {
-  // 🐶 créé un callback avec `React.useCallback`
-  // 🤖 const cb = React.useCallback(param1, param2)
-  // 1. param1 est une fonction qui :
-  //    - retourne rien si 'marvelName' n'est pas défini
-  //    - return fetchMarvel(marvelName) si 'marvelName' n'est pas défini
-  // 2. param2 les dépendances (marvelName dans ce cas)
-
-  // ⛏️ supprime le paramètre 'marvelName'
-  // 🐶 passe le callback à 'useFetchData'
-  return useFetchData(marvelName, fetchMarvelsList)
+  const {data, error, status, execute} = useFetchData()
+  React.useEffect(() => {
+    if (!marvelName) return
+    execute(fetchMarvelsList(marvelName))
+  }, [marvelName, execute])
+  return {data, error, status}
 }
 
-// 🐶 Modifie ce hook pour qu'il passe une fonction mémoïsé à 'useFetchData'
 function useFindMarvelByName(marvelName) {
-  // 🐶 réptète l'opération
-  return useFetchData(marvelName, fetchMarvel)
+  const {data, error, status, execute} = useFetchData()
+  React.useEffect(() => {
+    if (!marvelName) return
+    execute(fetchMarvel(marvelName))
+  }, [marvelName, execute])
+  return {data, error, status}
 }
 
 function Marvel({marvelName}) {
